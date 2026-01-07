@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Candidate {{ candidate.candidate_id if candidate else '' }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>Candidate {{ candidate.candidate_id if candidate else '—' }}</h1>
+
+    {% if candidate %}
+      <p><strong>Name:</strong> {{ candidate.name }}</p>
+      <p><strong>ID Type:</strong> {{ candidate.id_type }}</p>
+      <p><strong>DB ID Value:</strong> {{ candidate.id_value }}</p>
+      <p><strong>Status:</strong> {{ candidate.status }}</p>
+      <p><strong>OCR Value (path):</strong> {{ candidate.ocr_value }}</p>
+      <p><strong>Face reference path:</strong> {{ candidate.face_path }}</p>
+      <p><strong>Face attempt path:</strong> {{ candidate.face_attempt_path }}</p>
+      <p><strong>Face score:</strong> {{ candidate.face_score }}</p>
+
+      <hr>
+      <h3>Run OCR (upload hallticket)</h3>
+      <form action="/api/ocr" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
+        <input type="file" name="ocr_file" accept="image/*" required>
+        <button type="submit">Upload for OCR</button>
+      </form>
+
+      <hr>
+      <h3>Reference face (upload once)</h3>
+      <form action="/api/upload_ref_face" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
+        <input type="file" name="ref_face" accept="image/*" required>
+        <button type="submit">Upload Reference Face</button>
+      </form>
+
+      <hr>
+      <h3>Authenticate face (photo)</h3>
+      <form action="/api/face_attempt" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
+        <input type="file" name="face_file" accept="image/*" required>
+        <button type="submit">Upload Face Attempt</button>
+      </form>
+
+      <hr>
+      <h3>Manual status (use after running your pipelines)</h3>
+      <form action="/api/set_status" method="POST">
+        <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
+        <select name="status">
+          <option value="PENDING">PENDING</option>
+          <option value="PASS">PASS</option>
+          <option value="FAIL">FAIL</option>
+        </select>
+        <button type="submit">Set Status</button>
+      </form>
+
+      <hr>
+      <a href="/next/{{ candidate.candidate_id }}">Next candidate</a>
+    {% else %}
+      <p>Candidate not found.</p>
+    {% endif %}
+  </div>
+</body>
+</html>

@@ -3,26 +3,22 @@ body {
     color: #eee;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
-
 .container {
-    width: 400px;
-    margin: 120px auto;
+    width: 420px;
+    margin: 80px auto;
     text-align: center;
 }
-
-input, button {
+.accent { color: #00bfa5; font-weight:700; }
+input, select, button {
     width: 80%;
-    padding: 12px;
+    padding: 10px;
     margin: 8px;
     border-radius: 6px;
     border: none;
 }
-
 button {
     background: #00bfa5;
-    color: white;
-    font-size: 18px;
+    color: #111;
+    font-weight:600;
     cursor: pointer;
 }
-
-button:hover { background: #009e80; }

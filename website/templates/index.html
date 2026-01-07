@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Student Exam Verification System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1><span class="accent">Student</span> Exam Verification System</h1>
+    <form action="/dashboard" method="POST">
+      <input type="text" name="candidate_id" placeholder="Enter Candidate ID" required>
+      <button type="submit">Open Candidate</button>
+    </form>
+  </div>
+</body>
+</html>
