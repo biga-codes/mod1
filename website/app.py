@@ -4,7 +4,7 @@ import sqlite3
 import os
 from datetime import datetime
 
-# use your existing OCR/verifier classes
+
 from Untitled_1 import OCREngine, UserDatabase, IDVerifier
 
 BASE = Path(__file__).parent
@@ -135,6 +135,54 @@ def api_set_status():
 @app.route("/next/<int:cid>")
 def next_candidate(cid):
     return redirect(url_for("candidate", cid=cid + 1))
+
+
+@app.route("/report")
+def report():
+    # Read all users and their verification status, join users with verifications
+    users_db_path = BASE / "users.db"
+    users = []
+    import sqlite3 as _sqlite
+    # load users
+    with _sqlite.connect(users_db_path) as conn:
+        conn.row_factory = _sqlite.Row
+        cur = conn.execute("SELECT user_id, id_type, id_value FROM users ORDER BY user_id")
+        for r in cur.fetchall():
+            users.append({"user_id": r["user_id"], "id_type": r["id_type"], "id_value": r["id_value"]})
+
+    # enrich with verifications
+    verifs = {}
+    with verify_connect() as conn:
+        cur = conn.execute("SELECT * FROM verifications")
+        for r in cur.fetchall():
+            verifs[r["candidate_id"]] = dict(r)
+
+    rows = []
+    total = 0
+    passed = 0
+    failed = 0
+    for u in users:
+        uid = u["user_id"]
+        v = verifs.get(uid, {})
+        status = v.get("status") or "PENDING"
+        if status == "PASS":
+            passed += 1
+        if status == "FAIL":
+            failed += 1
+        total += 1
+        rows.append({
+            "user_id": uid,
+            "id_type": u.get("id_type"),
+            "id_value": u.get("id_value"),
+            "status": status,
+            "ocr_value": v.get("ocr_value"),
+            "last_update": v.get("last_update")
+        })
+
+    pass_pct = (passed / total * 100) if total else 0
+    fail_pct = (failed / total * 100) if total else 0
+
+    return render_template("report.html", rows=rows, pass_pct=round(pass_pct, 1), fail_pct=round(fail_pct, 1))
 
 if __name__ == "__main__":
     app.run(debug=True)
