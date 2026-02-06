@@ -1,3 +1,25 @@
+Automated Identity Authentication for Examination Centres
+📋 Project Overview
+AutoKYC is an automated identity verification system designed to streamline candidate authentication at examination centres using computer vision, facial recognition, and optical character recognition (OCR). This project eliminates the time-consuming manual verification processes and reduces impersonation fraud through biometric validation.
+
+🎯 Purpose
+Traditional examination centre entry procedures involve extensive manual checks of identity documents and hall tickets, leading to:
+
+Long queues and significant delays
+Human errors in verification
+Difficulty handling large volumes of candidates
+Increased risk of malpractice due to inadequate scrutiny
+
+✨ Key Features
+
+🔍 Automated OCR Text Extraction: Extracts candidate information from hall tickets, Aadhaar cards, and other ID documents using Tesseract OCR
+👤 Facial Recognition: Compares live candidate photos with reference images stored in the database
+📊 Real-time Verification Dashboard: Web-based interface for managing candidate records and verification status
+🗄️ Centralized Database: SQLite-based storage for candidate records, verification attempts, and audit logs
+🔐 Secure & Audit-Friendly: All verification attempts are logged with timestamps for traceability
+⚡ Fast Processing: Reduces verification time from minutes to seconds per candidate
+🎯 Fuzzy Matching: Handles OCR errors using similarity metrics (RapidFuzz/Levenshtein) for robust text matching
+
 # Testing & Setup Guide
 
 This guide covers how to set up, configure, and run the mod1 application.
@@ -68,7 +90,6 @@ python app.py
 ```
 
 ### Server Details
-- The server starts in **Debugger mode** (PIN: 407-662-983)
 - Access the UI at: **http://127.0.0.1:5000/**
 - The application runs on port 5000 by default
 
