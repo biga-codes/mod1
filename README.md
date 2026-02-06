@@ -132,7 +132,7 @@ python app.py
 | `website/app.py` | Main Flask entry point and API route definitions |
 | `website/templates/` | Jinja2 templates for the Home, Candidate, and Report views |
 | `website/static/` | Contains the futuristic CSS `style.css` and local assets |
-| `uploads/ocr/` | Storage for sensitive candidate documents (e.g., `213_ocr_1767750807.jpg`) |
+| `uploads/ocr/` | Storage for sensitive candidate documents |
 | `*.db` | Local SQLite instances storing verification records and user data |
 
 ## Running Tests
