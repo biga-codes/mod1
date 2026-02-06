@@ -2,9 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from pathlib import Path
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
-# use your existing OCR/verifier classes
+
 from Untitled_1 import OCREngine, UserDatabase, IDVerifier
 
 BASE = Path(__file__).parent
@@ -31,7 +31,7 @@ def get_verification(cid):
         return dict(row) if row else None
 
 def upsert_verification(cid, status=None, ocr_value=None, db_value=None, ocr_path=None, face_score=None):
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     with verify_connect() as conn:
         cur = conn.execute("SELECT 1 FROM verifications WHERE candidate_id = ?", (cid,))
         if cur.fetchone():
@@ -135,6 +135,69 @@ def api_set_status():
 @app.route("/next/<int:cid>")
 def next_candidate(cid):
     return redirect(url_for("candidate", cid=cid + 1))
+
+
+@app.route("/report")
+def report():
+    # Read all users and their verification status, join users with verifications
+    users_db_path = BASE / "users.db"
+    users = []
+    import sqlite3 as _sqlite
+    # load users
+    with _sqlite.connect(users_db_path) as conn:
+        conn.row_factory = _sqlite.Row
+        cur = conn.execute("SELECT user_id, id_type, id_value FROM users ORDER BY user_id")
+        for r in cur.fetchall():
+            users.append({"user_id": r["user_id"], "id_type": r["id_type"], "id_value": r["id_value"]})
+
+    # enrich with verifications
+    verifs = {}
+    with verify_connect() as conn:
+        cur = conn.execute("SELECT * FROM verifications")
+        for r in cur.fetchall():
+            verifs[r["candidate_id"]] = dict(r)
+
+    rows = []
+    total = 0
+    passed = 0
+    failed = 0
+    for u in users:
+        uid = u["user_id"]
+        v = verifs.get(uid, {})
+        status = v.get("status") or "PENDING"
+        if status == "PASS":
+            passed += 1
+        if status == "FAIL":
+            failed += 1
+        total += 1
+        # format last_update into a human-friendly string
+        lu = v.get("last_update")
+        if lu:
+            try:
+                parsed = datetime.fromisoformat(lu)
+                # show as YYYY-MM-DD HH:MM:SS UTC if timezone aware, otherwise local
+                if parsed.tzinfo is None:
+                    formatted_lu = parsed.strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    formatted_lu = parsed.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+            except Exception:
+                formatted_lu = lu
+        else:
+            formatted_lu = None
+
+        rows.append({
+            "user_id": uid,
+            "id_type": u.get("id_type"),
+            "id_value": u.get("id_value"),
+            "status": status,
+            "ocr_value": v.get("ocr_value"),
+            "last_update": formatted_lu
+        })
+
+    pass_pct = (passed / total * 100) if total else 0
+    fail_pct = (failed / total * 100) if total else 0
+
+    return render_template("report.html", rows=rows, pass_pct=round(pass_pct, 1), fail_pct=round(fail_pct, 1))
 
 if __name__ == "__main__":
     app.run(debug=True)

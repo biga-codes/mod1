@@ -13,11 +13,38 @@ with engine.begin() as conn:
         )
     """))
 
-    # Insert ONE test user
+    # Insert a default test user and a batch of Aadhaar users (INSERT OR IGNORE to be idempotent)
     conn.execute(text("""
-        INSERT INTO users (user_id, id_type, id_value)
-        VALUES (103, 'aadhaar', '342506531151')
+        INSERT OR IGNORE INTO users (user_id, id_type, id_value) VALUES
+        (103, 'aadhaar', '342506531151')
     """))
+
+    # seed 20 additional aadhaar users (IDs 200-219)
+    aadhaars = [
+        (200, 'aadhaar', '735882193971'),
+        (201, 'aadhaar', '342506531151'),
+        (202, 'aadhaar', '234500000003'),
+        (203, 'aadhaar', '342506531151'),
+        (204, 'aadhaar', '735882193971'),
+        (205, 'aadhaar', '342506531151'),
+        (206, 'aadhaar', '735882193971'),
+        (207, 'aadhaar', '735882193971'),
+        (208, 'aadhaar', '9147385602'),
+        (209, 'aadhaar', '982663598852'),
+        (210, 'aadhaar', '405030827062'),
+        (211, 'aadhaar', '123456789012'),
+        (212, 'aadhaar', '234500000013'),
+        (213, 'aadhaar', '566769986356'),
+        (214, 'aadhaar', '987654321098'),
+        (215, 'aadhaar', '234500000016'),
+        (216, 'aadhaar', '234500000017'),
+        (217, 'aadhaar', '234500000018'),
+        (218, 'aadhaar', '234500000019'),
+        (219, 'aadhaar', '234500000020')
+    ]
+
+    for u in aadhaars:
+        conn.execute(text("INSERT OR IGNORE INTO users (user_id, id_type, id_value) VALUES (:id, :t, :v)"), {"id": u[0], "t": u[1], "v": u[2]})
 
 print("✅ Database created: users.db")
 print("✅ User added: user_id=102, PAN=ABCDE1234F")

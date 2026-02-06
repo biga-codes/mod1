@@ -1,0 +1,16 @@
+# Ignore the virtual environment
+.venv/
+venv/
+
+# Ignore sensitive database files
+*.db
+
+trial.png
+
+# Ignore all candidate uploads (photos, halltickets, etc.)
+website/uploads/
+website/uploads/*
+
+# Ignore Python cache
+__pycache__/
+*.pyc
