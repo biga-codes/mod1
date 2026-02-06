@@ -1,2 +1,184 @@
-# mod1
+# Testing & Setup Guide
+
+This guide covers how to set up, configure, and run the mod1 application.
+
+## Prerequisites
+
+### System Requirements
+- Python 3.8 or higher
+- PowerShell Terminal on VS Code
+- SQLite3
+
+### Required Libraries
+Install all dependencies using pip:
+
+```bash
+pip install flask sqlalchemy pytesseract pillow opencv-python rapidfuzz
+```
+
+Or use the requirements file:
+
+```bash
+pip install -r requirements.txt
+```
+
+### PowerShell Execution Policy (Windows Only)
+If you encounter execution policy restrictions on Windows, run:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+```
+
+## Installation Steps
+
+### 1. Clone the Repository
+```bash
+git clone https://github.com/biga-codes/mod1.git
+cd mod1
+```
+
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Database Initialization
+Initialize the local SQLite databases from the **root directory** before the first run:
+
+```bash
+python website/create_db.py
+python website/create_verify_db.py
+```
+
+This creates:
+- `*.db` - Local SQLite instances storing verification records and user data
+
+## Running the Application
+
+### Starting the Flask Server
+
+**Important:** You must navigate into the `website` directory so that template and static paths resolve correctly:
+
+```bash
+# Navigate into the website folder
+cd website
+
+# Launch the Flask server
+python app.py
+```
+
+### Server Details
+- The server starts in **Debugger mode** (PIN: 407-662-983)
+- Access the UI at: **http://127.0.0.1:5000/**
+- The application runs on port 5000 by default
+
+## Project Structure
+
+| File/Folder | Description |
+|-------------|-------------|
+| `website/app.py` | Main Flask entry point and API route definitions |
+| `website/templates/` | Jinja2 templates for the Home, Candidate, and Report views |
+| `website/static/` | Contains the futuristic CSS `style.css` and local assets |
+| `uploads/ocr/` | Storage for sensitive candidate documents (e.g., `213_ocr_1767750807.jpg`) |
+| `*.db` | Local SQLite instances storing verification records and user data |
+
+## Running Tests
+
+### Manual Testing
+1. Navigate to the website directory:
+   ```bash
+   cd website
+   ```
+
+2. Start the application:
+   ```bash
+   python app.py
+   ```
+
+3. Open your browser and navigate to:
+   ```
+   http://127.0.0.1:5000/
+   ```
+
+4. Test the following features:
+   - Home page loads correctly
+   - Candidate verification functionality
+   - Document upload and OCR processing
+   - Report generation
+
+### API Testing
+You can test the API endpoints using tools like:
+- cURL
+- Postman
+- HTTPie
+
+Example:
+```bash
+curl http://127.0.0.1:5000/api/endpoint
+```
+
+## Troubleshooting
+
+### Common Issues
+
+**1. Module Not Found Error**
+```
+ModuleNotFoundError: No module named 'flask'
+```
+**Solution:** Install dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+**2. Template Not Found Error**
+```
+TemplateNotFoundError: template.html
+```
+**Solution:** Make sure you're running `python app.py` from the `website/` directory:
+```bash
+cd website
+python app.py
+```
+
+**3. Database Error**
+```
+sqlite3.OperationalError: no such table
+```
+**Solution:** Initialize databases from the root directory:
+```bash
+cd ..  # Go back to root
+python website/create_db.py
+python website/create_verify_db.py
+```
+
+**4. Port Already in Use**
+```
+OSError: [Errno 48] Address already in use
+```
+**Solution:** Kill the process using port 5000 or change the port in `app.py`
+
+## Security & Data Privacy
+
+ ** Security Notes:**
+- Ensure proper access controls are in place for production deployments
+- Never commit sensitive documents or database files to version control
+
+## Development Workflow
+
+1. **Make changes** to the code
+2. **Navigate to website directory**: `cd website`
+3. **Run the application**: `python app.py`
+4. **Test your changes** in the browser
+5. **Stop the server**: Press `Ctrl+C`
+
+## Additional Resources
+
+- Flask Documentation: https://flask.palletsprojects.com/
+- SQLAlchemy Documentation: https://docs.sqlalchemy.org/
+- Tesseract OCR: https://github.com/tesseract-ocr/tesseract
+
+## Support
+
+For issues or questions, please open an issue on the GitHub repository:
+https://github.com/biga-codes/mod1/issues
 
