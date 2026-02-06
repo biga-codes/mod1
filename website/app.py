@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash
 from pathlib import Path
 import sqlite3
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 from Untitled_1 import OCREngine, UserDatabase, IDVerifier
@@ -31,7 +31,7 @@ def get_verification(cid):
         return dict(row) if row else None
 
 def upsert_verification(cid, status=None, ocr_value=None, db_value=None, ocr_path=None, face_score=None):
-    now = datetime.utcnow().isoformat()
+    now = datetime.now(timezone.utc).isoformat()
     with verify_connect() as conn:
         cur = conn.execute("SELECT 1 FROM verifications WHERE candidate_id = ?", (cid,))
         if cur.fetchone():
@@ -170,13 +170,28 @@ def report():
         if status == "FAIL":
             failed += 1
         total += 1
+        # format last_update into a human-friendly string
+        lu = v.get("last_update")
+        if lu:
+            try:
+                parsed = datetime.fromisoformat(lu)
+                # show as YYYY-MM-DD HH:MM:SS UTC if timezone aware, otherwise local
+                if parsed.tzinfo is None:
+                    formatted_lu = parsed.strftime("%Y-%m-%d %H:%M:%S")
+                else:
+                    formatted_lu = parsed.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+            except Exception:
+                formatted_lu = lu
+        else:
+            formatted_lu = None
+
         rows.append({
             "user_id": uid,
             "id_type": u.get("id_type"),
             "id_value": u.get("id_value"),
             "status": status,
             "ocr_value": v.get("ocr_value"),
-            "last_update": v.get("last_update")
+            "last_update": formatted_lu
         })
 
     pass_pct = (passed / total * 100) if total else 0

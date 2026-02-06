@@ -5,7 +5,29 @@
     <title>Student Exam Verification System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+  <div class="right-menu">
+  <button id="menuBtn">☰</button>
+  <div id="menuDrop" class="menu-drop" style="display:none;">
+    <a href="/report">Report Generation</a>
+    <a href="/">Home</a>
+  </div>
+</div>
 <body>
+
+
+<script>
+  document.getElementById('menuBtn').addEventListener('click', function(e){
+    var d = document.getElementById('menuDrop');
+    d.style.display = d.style.display === 'block' ? 'none' : 'block';
+    e.stopPropagation();
+  });
+  window.addEventListener('click', function(e){
+    if (!e.target.matches('#menuBtn')) {
+      var d = document.getElementById('menuDrop');
+      if (d) d.style.display = 'none';
+    }
+  });
+</script>
   <div class="container">
     <h1><span class="accent">Student</span> Exam Verification System</h1>
     <form action="/dashboard" method="POST">

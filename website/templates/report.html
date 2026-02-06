@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Report Generation</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="right-menu">
+    <button id="menuBtn">☰</button>
+    <div id="menuDrop" class="menu-drop" style="display:none;">
+      <a href="/">Home</a>
+    </div>
+  </div>
+
+  <div class="container report-page-card">
+    <h1 class="accent">Report — All Candidates</h1>
+    
+    <div class="report-table-wrap">
+      <table class="report">
+        <thead>
+          <tr>
+            <th>Candidate ID</th>
+            <th>ID Type</th>
+            <th>ID Value</th>
+            <th>Status</th>
+            <th>OCR value</th>
+            <th>Last update</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in rows %}
+          <tr>
+            <td><a href="/candidate/{{ r.user_id }}" class="table-link">{{ r.user_id }}</a></td>
+            <td>{{ r.id_type }}</td>
+            <td>{{ r.id_value }}</td>
+            <td>{{ r.status }}</td>
+            <td>{{ r.ocr_value or '—' }}</td>
+            <td>{{ r.last_update or '—' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="percent-row">
+      <p>Accepted: <span class="accent">{{ pass_pct }}%</span></p>
+      <p>Rejected: <span style="color: var(--accent-pink);">{{ fail_pct }}%</span></p>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('menuBtn').addEventListener('click', function(e){
+      var d = document.getElementById('menuDrop');
+      d.style.display = d.style.display === 'block' ? 'none' : 'block';
+      e.stopPropagation();
+    });
+    window.addEventListener('click', function(e){
+      if (!e.target.matches('#menuBtn')) {
+        var d = document.getElementById('menuDrop');
+        if (d) d.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
