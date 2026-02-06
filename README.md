@@ -27,6 +27,9 @@ Traditional examination centre entry procedures involve extensive manual checks 
 
 The system follows a multi-stage verification pipeline:
 
+<img width="1334" height="701" alt="image" src="https://github.com/user-attachments/assets/3a9c1608-8e93-4469-b91f-6331549ed2a0" />
+
+
 1. **Image Capture**: ID documents and live photos captured via camera/webcam
 2. **Preprocessing**: Image enhancement, denoising, and preparation using OpenCV
 3. **Text Extraction**: OCR engine extracts text from preprocessed ID images
