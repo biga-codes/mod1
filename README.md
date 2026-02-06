@@ -1,8 +1,8 @@
-# Automated Identity Authentication for Examination Centres
+# Automated examination centre operations platform
 
 ## 📋 Project Overview
 
-AutoKYC is an automated identity verification system designed to streamline candidate authentication at examination centres using computer vision, facial recognition, and optical character recognition (OCR). This project eliminates the time-consuming manual verification processes and reduces impersonation fraud through biometric validation.
+AutoKYC is an automated examination centre operations platform designed to streamline candidate authentication at examination centres using computer vision, facial recognition, and optical character recognition (OCR). This project eliminates the time-consuming manual verification processes and reduces impersonation fraud through biometric validation.
 
 ## 🎯 Purpose
 
