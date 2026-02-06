@@ -20,6 +20,26 @@ Increased risk of malpractice due to inadequate scrutiny
 ⚡ Fast Processing: Reduces verification time from minutes to seconds per candidate
 🎯 Fuzzy Matching: Handles OCR errors using similarity metrics (RapidFuzz/Levenshtein) for robust text matching
 
+🏗️ System Architecture
+The system follows a multi-stage verification pipeline:
+
+Image Capture: ID documents and live photos captured via camera/webcam
+Preprocessing: Image enhancement, denoising, and preparation using OpenCV
+Text Extraction: OCR engine extracts text from preprocessed ID images
+Data Normalization: Fuzzy text correction handles spelling errors and formatting
+Facial Recognition: Features extracted from live photo and compared with stored data
+Database Verification: Cross-references extracted data with SQLite records
+Decision & Logging: Returns ACCEPTED/REJECTED status with audit trail
+
+🛠️ Technology Stack
+
+Backend: Python, Flask
+Database: SQLite with SQLAlchemy ORM
+Computer Vision: OpenCV (cv2)
+OCR: Tesseract (pytesseract)
+Image Processing: Pillow (PIL)
+Text Matching: RapidFuzz (fuzzy string matching)
+
 # Testing & Setup Guide
 
 This guide covers how to set up, configure, and run the mod1 application.
