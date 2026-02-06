@@ -182,7 +182,7 @@ ModuleNotFoundError: No module named 'flask'
 ```
 **Solution:** Install dependencies:
 ```bash
-pip install -r requirements.txt
+pip install flask sqlalchemy pytesseract pillow opencv-python rapidfuzz
 ```
 
 **2. Template Not Found Error**
