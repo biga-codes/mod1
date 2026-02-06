@@ -1,44 +1,50 @@
-#Automated Identity Authentication for Examination Centres
-#📋 Project Overview
+# Automated Identity Authentication for Examination Centres
+
+## 📋 Project Overview
+
 AutoKYC is an automated identity verification system designed to streamline candidate authentication at examination centres using computer vision, facial recognition, and optical character recognition (OCR). This project eliminates the time-consuming manual verification processes and reduces impersonation fraud through biometric validation.
 
-#🎯 Purpose
+## 🎯 Purpose
+
 Traditional examination centre entry procedures involve extensive manual checks of identity documents and hall tickets, leading to:
 
-Long queues and significant delays
-Human errors in verification
-Difficulty handling large volumes of candidates
-Increased risk of malpractice due to inadequate scrutiny
+- Long queues and significant delays
+- Human errors in verification
+- Difficulty handling large volumes of candidates
+- Increased risk of malpractice due to inadequate scrutiny
 
-#✨ Key Features
+## ✨ Key Features
 
-🔍 Automated OCR Text Extraction: Extracts candidate information from hall tickets, Aadhaar cards, and other ID documents using Tesseract OCR
-👤 Facial Recognition: Compares live candidate photos with reference images stored in the database
-📊 Real-time Verification Dashboard: Web-based interface for managing candidate records and verification status
-🗄️ Centralized Database: SQLite-based storage for candidate records, verification attempts, and audit logs
-🔐 Secure & Audit-Friendly: All verification attempts are logged with timestamps for traceability
-⚡ Fast Processing: Reduces verification time from minutes to seconds per candidate
-🎯 Fuzzy Matching: Handles OCR errors using similarity metrics (RapidFuzz/Levenshtein) for robust text matching
+- **🔍 Automated OCR Text Extraction**: Extracts candidate information from hall tickets, Aadhaar cards, and other ID documents using Tesseract OCR
+- **👤 Facial Recognition**: Compares live candidate photos with reference images stored in the database
+- **📊 Real-time Verification Dashboard**: Web-based interface for managing candidate records and verification status
+- **🗄️ Centralized Database**: SQLite-based storage for candidate records, verification attempts, and audit logs
+- **🔐 Secure & Audit-Friendly**: All verification attempts are logged with timestamps for traceability
+- **⚡ Fast Processing**: Reduces verification time from minutes to seconds per candidate
+- **🎯 Fuzzy Matching**: Handles OCR errors using similarity metrics (RapidFuzz/Levenshtein) for robust text matching
 
-#🏗️ System Architecture
+## 🏗️ System Architecture
+
 The system follows a multi-stage verification pipeline:
 
-Image Capture: ID documents and live photos captured via camera/webcam
-Preprocessing: Image enhancement, denoising, and preparation using OpenCV
-Text Extraction: OCR engine extracts text from preprocessed ID images
-Data Normalization: Fuzzy text correction handles spelling errors and formatting
-Facial Recognition: Features extracted from live photo and compared with stored data
-Database Verification: Cross-references extracted data with SQLite records
-Decision & Logging: Returns ACCEPTED/REJECTED status with audit trail
+1. **Image Capture**: ID documents and live photos captured via camera/webcam
+2. **Preprocessing**: Image enhancement, denoising, and preparation using OpenCV
+3. **Text Extraction**: OCR engine extracts text from preprocessed ID images
+4. **Data Normalization**: Fuzzy text correction handles spelling errors and formatting
+5. **Facial Recognition**: Features extracted from live photo and compared with stored data
+6. **Database Verification**: Cross-references extracted data with SQLite records
+7. **Decision & Logging**: Returns ACCEPTED/REJECTED status with audit trail
 
-#🛠️ Technology Stack
+## 🛠️ Technology Stack
 
-Backend: Python, Flask
-Database: SQLite with SQLAlchemy ORM
-Computer Vision: OpenCV (cv2)
-OCR: Tesseract (pytesseract)
-Image Processing: Pillow (PIL)
-Text Matching: RapidFuzz (fuzzy string matching)
+- **Backend**: Python, Flask
+- **Database**: SQLite with SQLAlchemy ORM
+- **Computer Vision**: OpenCV (cv2)
+- **OCR**: Tesseract (pytesseract)
+- **Image Processing**: Pillow (PIL)
+- **Text Matching**: RapidFuzz (fuzzy string matching)
+
+---
 
 # Testing & Setup Guide
 
@@ -52,6 +58,7 @@ This guide covers how to set up, configure, and run the mod1 application.
 - SQLite3
 
 ### Required Libraries
+
 Install all dependencies using pip:
 
 ```bash
@@ -65,6 +72,7 @@ pip install -r requirements.txt
 ```
 
 ### PowerShell Execution Policy (Windows Only)
+
 If you encounter execution policy restrictions on Windows, run:
 
 ```powershell
@@ -74,17 +82,20 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 ## Installation Steps
 
 ### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/biga-codes/mod1.git
 cd mod1
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
 ### 3. Database Initialization
+
 Initialize the local SQLite databases from the **root directory** before the first run:
 
 ```bash
@@ -110,6 +121,7 @@ python app.py
 ```
 
 ### Server Details
+
 - Access the UI at: **http://127.0.0.1:5000/**
 - The application runs on port 5000 by default
 
@@ -126,6 +138,7 @@ python app.py
 ## Running Tests
 
 ### Manual Testing
+
 1. Navigate to the website directory:
    ```bash
    cd website
@@ -148,6 +161,7 @@ python app.py
    - Report generation
 
 ### API Testing
+
 You can test the API endpoints using tools like:
 - cURL
 - Postman
@@ -200,7 +214,7 @@ OSError: [Errno 48] Address already in use
 
 ## Security & Data Privacy
 
- ** Security Notes:**
+⚠️ **Security Notes:**
 - Ensure proper access controls are in place for production deployments
 - Never commit sensitive documents or database files to version control
 
