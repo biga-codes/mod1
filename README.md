@@ -1,8 +1,8 @@
-Automated Identity Authentication for Examination Centres
-📋 Project Overview
+#Automated Identity Authentication for Examination Centres
+#📋 Project Overview
 AutoKYC is an automated identity verification system designed to streamline candidate authentication at examination centres using computer vision, facial recognition, and optical character recognition (OCR). This project eliminates the time-consuming manual verification processes and reduces impersonation fraud through biometric validation.
 
-🎯 Purpose
+#🎯 Purpose
 Traditional examination centre entry procedures involve extensive manual checks of identity documents and hall tickets, leading to:
 
 Long queues and significant delays
@@ -10,7 +10,7 @@ Human errors in verification
 Difficulty handling large volumes of candidates
 Increased risk of malpractice due to inadequate scrutiny
 
-✨ Key Features
+#✨ Key Features
 
 🔍 Automated OCR Text Extraction: Extracts candidate information from hall tickets, Aadhaar cards, and other ID documents using Tesseract OCR
 👤 Facial Recognition: Compares live candidate photos with reference images stored in the database
@@ -20,7 +20,7 @@ Increased risk of malpractice due to inadequate scrutiny
 ⚡ Fast Processing: Reduces verification time from minutes to seconds per candidate
 🎯 Fuzzy Matching: Handles OCR errors using similarity metrics (RapidFuzz/Levenshtein) for robust text matching
 
-🏗️ System Architecture
+#🏗️ System Architecture
 The system follows a multi-stage verification pipeline:
 
 Image Capture: ID documents and live photos captured via camera/webcam
@@ -31,7 +31,7 @@ Facial Recognition: Features extracted from live photo and compared with stored 
 Database Verification: Cross-references extracted data with SQLite records
 Decision & Logging: Returns ACCEPTED/REJECTED status with audit trail
 
-🛠️ Technology Stack
+#🛠️ Technology Stack
 
 Backend: Python, Flask
 Database: SQLite with SQLAlchemy ORM
