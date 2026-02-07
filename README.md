@@ -2,7 +2,7 @@
 
 ## 📋 Project Overview
 
-Automated examination centre operations platform with real-time candidate verification, hall ticket OCR processing, live facial biometric capture, and comprehensive audit trails. Combines computer vision preprocessing, deep learning face matching, fuzzy similarity algorithms, and centralized dashboards for efficient, fraud/impersonation proof setup, This project eliminates the time-consuming manual verification processes and reduces impersonation fraud through biometric validation.
+Automated examination centre operations platform with real-time candidate verification, aadhar/pan/hall-ticket OCR processing, live facial biometric capture, and comprehensive audit trails. Combines computer vision preprocessing, deep learning face matching, fuzzy similarity algorithms, and centralized dashboards for efficient, fraud/impersonation proof setup, This project eliminates the time-consuming manual verification processes and reduces impersonation fraud through biometric validation.
 
 ## 🎯 Purpose
 
