@@ -1,4 +1,4 @@
-# Automated examination centre operations platform
+# Automated examination centre operations platform - end semester project 
 
 ## 📋 Project Overview
 
