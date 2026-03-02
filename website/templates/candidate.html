@@ -4,16 +4,120 @@
   <meta charset="utf-8">
   <title>Candidate {{ candidate.candidate_id if candidate else '' }}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    #webcam-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+    #webcam-modal.open { display: flex; }
+
+    .webcam-card {
+      background: rgba(15,15,25,0.97);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 24px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      max-width: 480px;
+      width: 90%;
+    }
+    .webcam-card h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #f0f0f0;
+    }
+    #webcam-video, #webcam-canvas {
+      border-radius: 14px;
+      width: 100%;
+      max-width: 400px;
+    }
+    #webcam-canvas { display: none; }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    .btn-row button {
+      flex: 1;
+      padding: 12px;
+      font-size: 13px;
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.08) !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
+      box-shadow: none !important;
+    }
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.14) !important;
+    }
+
+    .section-label {
+      width: 100%;
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+      color: #3d7aeb;
+      margin: 18px 0 6px;
+    }
+    .divider {
+      width: 100%;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      margin: 8px 0;
+    }
+    .face-btn-group {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+    .face-btn-group button {
+      flex: 1;
+      padding: 11px 8px;
+      font-size: 12px;
+    }
+    select {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: white;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    .flash-msg {
+      background: rgba(112,0,255,0.15);
+      border: 1px solid rgba(112,0,255,0.3);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-size: 13px;
+      width: 100%;
+      box-sizing: border-box;
+      text-align: left;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- nav -->
   <div class="right-menu">
-    <button id="menuBtn">☰</button>
+    <button id="menuBtn" style="width:auto;">☰</button>
     <div id="menuDrop" class="menu-drop" style="display:none;">
       <a href="/report">Report Generation</a>
       <a href="/">Home</a>
     </div>
   </div>
-
   <script>
     document.getElementById('menuBtn').addEventListener('click', function(e){
       var d = document.getElementById('menuDrop');
@@ -27,46 +131,86 @@
       }
     });
   </script>
-  <div class="container">
+
+  <!-- ── Webcam modal ── -->
+  <div id="webcam-modal">
+    <div class="webcam-card">
+      <h3>📷 Live Face Capture</h3>
+      <video id="webcam-video" autoplay playsinline></video>
+      <canvas id="webcam-canvas"></canvas>
+      <div class="btn-row">
+        <button id="btn-capture">Take Photo</button>
+        <button class="btn-secondary" id="btn-retake" style="display:none;">Retake</button>
+        <button class="btn-secondary" id="btn-cam-cancel">Cancel</button>
+      </div>
+      <!-- form that submits the base64 snapshot -->
+      <form id="webcam-form" action="/api/face_attempt" method="POST" style="display:none;">
+        <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id if candidate else '' }}">
+        <input type="hidden" name="webcam_image" id="webcam-image-data">
+      </form>
+      <button id="btn-submit-capture" style="display:none;">Submit Capture</button>
+    </div>
+  </div>
+
+  
+  <div class="container" style="max-width:500px;">
     <h1>Candidate {{ candidate.candidate_id if candidate else '—' }}</h1>
 
-    {% if candidate %}
-      <p><strong>Name:</strong> {{ candidate.name }}</p>
-      <p><strong>ID Type:</strong> {{ candidate.id_type }}</p>
-      <p><strong>DB ID Value:</strong> {{ candidate.id_value }}</p>
-      <p><strong>Status:</strong> {{ candidate.status }}</p>
-      <p><strong>OCR Value (path):</strong> {{ candidate.ocr_value }}</p>
-      <p><strong>Face reference path:</strong> {{ candidate.face_path }}</p>
-      <p><strong>Face attempt path:</strong> {{ candidate.face_attempt_path }}</p>
-      <p><strong>Face score:</strong> {{ candidate.face_score }}</p>
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="flash-msg">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
-      <hr>
-      <h3>Run OCR (upload hallticket)</h3>
-      <form action="/api/ocr" method="POST" enctype="multipart/form-data">
+    {% if candidate %}
+      
+      <div class="stats-grid">
+        <div class="data-row"><span class="label">Name</span><span class="value">{{ candidate.name or '—' }}</span></div>
+        <div class="data-row"><span class="label">ID Type</span><span class="value">{{ candidate.id_type or '—' }}</span></div>
+        <div class="data-row"><span class="label">DB ID Value</span><span class="value">{{ candidate.id_value or '—' }}</span></div>
+        <div class="data-row"><span class="label">Status</span><span class="value">{{ candidate.status or 'PENDING' }}</span></div>
+        <div class="data-row"><span class="label">OCR Value</span><span class="value">{{ candidate.ocr_value or '—' }}</span></div>
+        <div class="data-row"><span class="label">Face Score</span><span class="value">{{ '%.3f'|format(candidate.face_score) if candidate.face_score is not none else '—' }}</span></div>
+      </div>
+
+      <hr class="divider">
+
+      
+      <p class="section-label">1 — OCR Verification (upload hall ticket)</p>
+      <form action="/api/ocr" method="POST" enctype="multipart/form-data" style="width:100%;">
         <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
-        <input type="file" name="ocr_file" accept="image/*" required>
+        <input type="file" name="ocr_file" accept="image/*" required style="margin-bottom:10px;">
         <button type="submit">Upload for OCR</button>
       </form>
 
-      <hr>
-      <h3>Reference face (upload once)</h3>
-      <form action="/api/upload_ref_face" method="POST" enctype="multipart/form-data">
+      <hr class="divider">
+
+      
+      <p class="section-label">2 — Face Authentication</p>
+      <div class="face-btn-group">
+        <button id="btn-open-cam" type="button">📷 Webcam Capture</button>
+        <label style="flex:1;">
+          <button type="button" onclick="document.getElementById('face-upload-input').click()">
+            📁 Upload Photo
+          </button>
+        </label>
+      </div>
+
+      <!-- hidden file-upload formmanual face photo -->
+      <form id="face-upload-form" action="/api/face_attempt" method="POST"
+            enctype="multipart/form-data" style="display:none;">
         <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
-        <input type="file" name="ref_face" accept="image/*" required>
-        <button type="submit">Upload Reference Face</button>
+        <input type="file" id="face-upload-input" name="face_file"
+               accept="image/*" onchange="this.form.submit()">
       </form>
 
-      <hr>
-      <h3>Authenticate face (photo)</h3>
-      <form action="/api/face_attempt" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
-        <input type="file" name="face_file" accept="image/*" required>
-        <button type="submit">Upload Face Attempt</button>
-      </form>
+      <hr class="divider">
 
-      <hr>
-      <h3>Manual status (use after running your pipelines)</h3>
-      <form action="/api/set_status" method="POST">
+      
+      <p class="section-label">3 — Manual Status Override</p>
+      <form action="/api/set_status" method="POST" style="width:100%;">
         <input type="hidden" name="candidate_id" value="{{ candidate.candidate_id }}">
         <select name="status">
           <option value="PENDING">PENDING</option>
@@ -76,11 +220,81 @@
         <button type="submit">Set Status</button>
       </form>
 
-      <hr>
-      <a href="/next/{{ candidate.candidate_id }}">Next candidate</a>
+      <hr class="divider">
+      <a class="next-link" href="/next/{{ candidate.candidate_id }}">Next candidate →</a>
+
     {% else %}
       <p>Candidate not found.</p>
     {% endif %}
   </div>
+
+  <!-- ── Webcam JS ── -->
+  <script>
+    const modal     = document.getElementById('webcam-modal');
+    const video     = document.getElementById('webcam-video');
+    const canvas    = document.getElementById('webcam-canvas');
+    const btnOpen   = document.getElementById('btn-open-cam');
+    const btnCapture= document.getElementById('btn-capture');
+    const btnRetake = document.getElementById('btn-retake');
+    const btnCancel = document.getElementById('btn-cam-cancel');
+    const btnSubmit = document.getElementById('btn-submit-capture');
+    const imgData   = document.getElementById('webcam-image-data');
+    const wcForm    = document.getElementById('webcam-form');
+
+    let stream = null;
+
+    function stopStream() {
+      if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+    }
+
+    btnOpen.addEventListener('click', async () => {
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        canvas.style.display = 'none';
+        btnCapture.style.display = '';
+        btnRetake.style.display = 'none';
+        btnSubmit.style.display = 'none';
+        modal.classList.add('open');
+      } catch(e) {
+        alert('Could not access camera: ' + e.message);
+      }
+    });
+
+    btnCapture.addEventListener('click', () => {
+      canvas.width  = video.videoWidth;
+      canvas.height = video.videoHeight;
+      canvas.getContext('2d').drawImage(video, 0, 0);
+      imgData.value = canvas.toDataURL('image/jpeg', 0.92);
+      video.style.display = 'none';
+      canvas.style.display = 'block';
+      btnCapture.style.display = 'none';
+      btnRetake.style.display = '';
+      btnSubmit.style.display = '';
+      stopStream();
+    });
+
+    btnRetake.addEventListener('click', async () => {
+      stream = await navigator.mediaDevices.getUserMedia({ video: true });
+      video.srcObject = stream;
+      video.style.display = 'block';
+      canvas.style.display = 'none';
+      btnCapture.style.display = '';
+      btnRetake.style.display = 'none';
+      btnSubmit.style.display = 'none';
+    });
+
+    btnSubmit.addEventListener('click', () => {
+      stopStream();
+      modal.classList.remove('open');
+      wcForm.submit();
+    });
+
+    btnCancel.addEventListener('click', () => {
+      stopStream();
+      modal.classList.remove('open');
+    });
+  </script>
 </body>
 </html>
