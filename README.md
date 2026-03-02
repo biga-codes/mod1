@@ -12,6 +12,8 @@ Automated examination centre operations platform with real-time candidate verifi
 - **OCR**: Tesseract (pytesseract)
 - **Image Processing**: Pillow (PIL)
 - **Text Matching**: RapidFuzz (fuzzy string matching)
+- **PDF (Hallpass) Generation**: Html, xhtml2pdf
+- **Image Embedding/Quality Processing**: numpy, base64
 
   
 ## Website Implementation:
