@@ -1,3 +1,4 @@
+
 from sqlalchemy import create_engine, text
 
 # This creates a file called users.db in the current folder
@@ -10,20 +11,13 @@ with engine.begin() as conn:
             user_id INTEGER PRIMARY KEY,
             id_type TEXT NOT NULL,
             id_value TEXT NOT NULL,
-            primary_face_path TEXT
+            id_face_image_path TEXT,          -- path to face extracted from ID
+            registered_live_image_path TEXT,  -- optional selfie
+            face_embedding BLOB  
+            
         )
-                   
     """))
 
-    conn.execute(text("""
-        CREATE TABLE IF NOT EXISTS user_faces (
-            face_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
-            image_path TEXT NOT NULL,
-            embedding BLOB,           -- optional, pre‑computed vector
-            uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        ) """))
-    
     # Insert a default test user and a batch of Aadhaar users (INSERT OR IGNORE to be idempotent)
     conn.execute(text("""
         INSERT OR IGNORE INTO users (user_id, id_type, id_value) VALUES
@@ -58,4 +52,3 @@ with engine.begin() as conn:
         conn.execute(text("INSERT OR IGNORE INTO users (user_id, id_type, id_value) VALUES (:id, :t, :v)"), {"id": u[0], "t": u[1], "v": u[2]})
 
 print("Database created: users.db")
-

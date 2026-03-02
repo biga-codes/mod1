@@ -28,6 +28,7 @@ class IndianIDFormats:
         "pan": re.compile(r"\b[A-Z]{5}[0-9]{4}[A-Z]\b"),
         "passport": re.compile(r"\b[A-Z][0-9]{7}\b"),
         "voter": re.compile(r"\b[A-Z]{3}[0-9]{7}\b"),
+        "hallticket": re.compile(r"\b[0-9]{10}\b")
     }
 
     @staticmethod

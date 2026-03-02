@@ -23,10 +23,10 @@ for d in (UPLOAD_DIR, OCR_DIR, FACE_REF_DIR, FACE_ATTEMPT_DIR):
 app = Flask(__name__)
 app.secret_key = "dev-secret"
 
-# shared InsightFace engine (loaded once at startup) 
+# ─── shared InsightFace engine (loaded once at startup) ───────────────────────
 face_engine = InsightFaceEngine()
 
-# DB rulezz
+# ─── DB helpers ───────────────────────────────────────────────────────────────
 
 def verify_connect():
     conn = sqlite3.connect(VERIFY_DB)
@@ -78,7 +78,7 @@ def get_user_record(uid):
     except Exception:
         return None
 
-#APIRoutes 
+# ─── Routes ───────────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
@@ -111,7 +111,7 @@ def candidate(cid):
     }
     return render_template("candidate.html", candidate=display)
 
-# OCR 
+# ── OCR ───────────────────────────────────────────────────────────────────────
 
 @app.route("/api/ocr", methods=["POST"])
 def api_ocr():
@@ -158,36 +158,42 @@ def api_ocr():
     flash(f"OCR completed — status: {ocr_status}")
     return redirect(url_for("candidate", cid=cid))
 
-    # Preserve existing face result when recalculating combined status
-    existing = get_verification(cid) or {}
-    face_status = existing.get("face_status")          # separate sub-status column if you add it
-    combined = _merge_status(ocr_status, existing.get("face_score") and
-                             ("PASS" if existing.get("face_score", 0) >= 0.4 else "FAIL"))
+# ── Upload reference face (stored once in users.db path) ──────────────────────
 
-    upsert_verification(
-        cid,
-        status=combined,
-        ocr_value=ocr_value,
-        db_value=db_value,
-        ocr_path=str(path),
-        face_score=existing.get("face_score"),
-        face_path=existing.get("face_path"),
-        face_attempt_path=existing.get("face_attempt_path"),
-    )
-    flash(f"OCR completed — status: {ocr_status}")
+@app.route("/api/upload_ref_face", methods=["POST"])
+def api_upload_ref_face():
+    cid = int(request.form.get("candidate_id"))
+    file = request.files.get("ref_face")
+    if not file:
+        flash("No reference face file provided")
+        return redirect(url_for("candidate", cid=cid))
+
+    dest = FACE_REF_DIR / f"{cid}.jpg"
+    file.save(dest)
+
+    # Persist path back into users.db
+    users_db_path = BASE / "users.db"
+    with sqlite3.connect(users_db_path) as conn:
+        conn.execute(
+            "UPDATE users SET id_face_image_path = ? WHERE user_id = ?",
+            (str(dest), cid)
+        )
+        conn.commit()
+
+    flash("Reference face uploaded successfully")
     return redirect(url_for("candidate", cid=cid))
 
-#  facever  
+# ── Face attempt: file upload OR webcam capture ────────────────────────────────
 
 def _run_face_verification(cid: int, live_image_path: str):
     """
-    Compares uploads/facever/<cid>.jpg (pre-placed reference photo) against the
-    live image. No DB read required — file naming convention is the source of truth.
-    Deliberately does NOT re-run OCR.
+    Compares the stored reference face for `cid` against the live image.
+    Returns (face_status, similarity_score).
+    Deliberately does NOT re-run OCR — that is handled by /api/ocr separately.
     """
     ref_path = FACE_REF_DIR / f"{cid}.jpg"
     if not ref_path.exists():
-        return "FAIL", None, f"Reference photo not found at {ref_path}. Place <id>.jpg in uploads/facever/."
+        return "FAIL", None, "No reference face found. Upload one first."
 
     try:
         ref_emb  = face_engine.extract_embedding(str(ref_path))
@@ -197,7 +203,6 @@ def _run_face_verification(cid: int, live_image_path: str):
         return face_status, float(result["similarity"]), None
     except Exception as e:
         return "FAIL", None, str(e)
-
 
 
 @app.route("/api/face_attempt", methods=["POST"])
@@ -227,7 +232,7 @@ def api_face_attempt():
         flash("No face image provided (upload or webcam)")
         return redirect(url_for("candidate", cid=cid))
 
-    # ── Run face-only verification 
+    # ── Run face-only verification ─────────────────────────────────────────────
     face_status, similarity, error = _run_face_verification(cid, str(attempt_path))
 
     if error:
@@ -235,15 +240,20 @@ def api_face_attempt():
     else:
         flash(f"Face verification completed — {face_status} (similarity: {similarity:.3f})")
 
-    #statusscheckkk
-    existing   = get_verification(cid) or {}
-    ocr_val    = existing.get("ocr_value")
-    db_val     = existing.get("db_value")
-    if ocr_val is not None and db_val is not None:
-        ocr_status = "PASS" if ocr_val == db_val else "FAIL"
-    else:
-        ocr_status = "PENDING"
-    combined = _merge_status(ocr_status, face_status)
+    # ── Merge with existing OCR status ────────────────────────────────────────
+    existing = get_verification(cid) or {}
+    ocr_score = existing.get("ocr_value")   # non-None means OCR ran
+    ocr_status = None
+    if existing.get("status") in ("PASS", "FAIL") and ocr_score is not None:
+        # derive ocr_status from whether ocr_value matched db_value
+        ocr_status = "PASS" if existing.get("status") == "PASS" or \
+                     (existing.get("ocr_value") == existing.get("db_value")) else "FAIL"
+    # Simpler: track raw OCR pass separately — store in a dedicated column
+    # For now, re-read: if OCR sub-status can't be determined yet, treat as PENDING
+    combined = _merge_status(
+        existing.get("ocr_status", "PENDING"),   # needs ocr_status column (see note below)
+        face_status
+    )
 
     upsert_verification(
         cid,
@@ -257,7 +267,8 @@ def api_face_attempt():
     )
     return redirect(url_for("candidate", cid=cid))
 
-# Manual statuscheckk
+
+# ── Manual status override ────────────────────────────────────────────────────
 
 @app.route("/api/set_status", methods=["POST"])
 def api_set_status():
@@ -284,7 +295,7 @@ def api_set_status():
 def next_candidate(cid):
     return redirect(url_for("candidate", cid=cid + 1))
 
-# ─ Report ─
+# ── Report ────────────────────────────────────────────────────────────────────
 
 @app.route("/report")
 def report():
@@ -341,23 +352,3 @@ def report():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
