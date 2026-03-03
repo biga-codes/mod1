@@ -120,17 +120,11 @@ git clone https://github.com/biga-codes/mod1.git
 cd mod1
 ```
 
-**Important:** You must navigate into the `website` directory so that template and static paths resolve correctly:
-
-```bash
-# Navigate into the website folder
-cd website
-```
-
 ### 2. Install Dependencies
 
 ```bash
-pip install -r requirements.txt
+pip install https://github.com/Gourieff/Assets/raw/main/Insightface/insightface-0.7.3-cp313-cp313-win_amd64.whl
+pip install -r website/requirements.txt
 ```
 
 ### 3. Database Initialization
@@ -138,8 +132,8 @@ pip install -r requirements.txt
 Initialize the local SQLite databases from the **root directory** before the first run:
 
 ```bash
-python create_db.py
-python create_verify_db.py
+python website/create_db.py
+python website/create_verify_db.py
 ```
 
 This creates:
@@ -150,6 +144,9 @@ This creates:
 ### Starting the Flask Server
 
 ```bash
+# Navigate into the website folder
+cd website
+
 # Launch the Flask server
 python app.py
 ```
