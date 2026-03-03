@@ -9,4 +9,3 @@ onnxruntime
 rapidfuzz
 numpy
 xhtml2pdf
-io
